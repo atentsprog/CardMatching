@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Assets\BlockInfo.cs" />
     <Compile Include="Assets\BlockManager.cs" />
+    <Compile Include="Assets\LevelConstructor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -656,6 +657,18 @@
     <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
       <Project>{9CBB8E4C-CAAB-713C-F772-18167A16CD8E}</Project>
       <Name>Assembly-CSharp-firstpass</Name>
+    </ProjectReference>
+    <ProjectReference Include="NaughtyAttributes.Editor.csproj">
+      <Project>{7B890537-D736-D16A-112E-F9F7631C0F01}</Project>
+      <Name>NaughtyAttributes.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="NaughtyAttributes.Test.csproj">
+      <Project>{1808C216-B32D-6E64-79FD-4877E6D59F77}</Project>
+      <Name>NaughtyAttributes.Test</Name>
+    </ProjectReference>
+    <ProjectReference Include="NaughtyAttributes.Core.csproj">
+      <Project>{2DB7ED1E-2605-3283-88A3-F32965BA45BB}</Project>
+      <Name>NaughtyAttributes.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

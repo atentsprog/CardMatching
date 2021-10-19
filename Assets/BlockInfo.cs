@@ -10,25 +10,25 @@ public class BlockInfo : MonoBehaviour
 
     void Start()
     {
-        GetComponent<Renderer>().material.SetColor("_Color",
-            ConvertColor(blockType)); 
+        //GetComponent<Renderer>().material.SetColor("_Color",
+        //    ConvertColor(blockType)); 
     }
-    Color ConvertColor(BlockType type)
-    {
-        switch (type)
-        {
-            case BlockType.Walkable:    return Color.black;
-            case BlockType.Card1: return Color.red;
-            case BlockType.Card2: return Color.blue;
-            default:
-                Debug.LogError($"정의 하지 않은 타입 : {type}");
-                return Color.white;
-        }
-    }
+    //Color ConvertColor(BlockType type)
+    //{
+    //    switch (type)
+    //    {
+    //        case BlockTe.Card2: return Color.blue;
+    //        default:ype.Walkable:    return Color.black;
+    //        case BlockType.Card1: return Color.red;
+    //        case BlockTyp
+    //            Debug.LogError($"정의 하지 않은 타입 : {type}");
+    //            return Color.white;
+    //    }
+    //}
 
     private void OnMouseDown()
     {
-        print($"blockType:{blockType}, {ConvertColor(blockType)}");
+        print($"blockType:{blockType}");
         BlockManager.Instance.FindPath(this);
     }
 
@@ -36,5 +36,10 @@ public class BlockInfo : MonoBehaviour
     {
         transform.DOComplete();
         transform.DOPunchScale(Vector3.one * 0.5f, 0.3f);
+    }
+
+    internal void SetTexture(Texture2D texture)
+    {
+        GetComponent<Renderer>().material.mainTexture = texture;
     }
 }

@@ -53,8 +53,14 @@ public class BlockManager : MonoBehaviour
     {
         List<BlockInfo> allBlocks = new List<BlockInfo>(GetComponentsInChildren<BlockInfo>());
 
-        int maxCountX = allBlocks.OrderBy(x => x.transform.position.x).Last().transform.position.ToVector2Int().x + 1;
-        int maxCountY = allBlocks.OrderBy(x => x.transform.position.y).Last().transform.position.ToVector2Int().y + 1;
+        GroundExtention.scaleX = allBlocks[0].transform.localScale.x;
+        GroundExtention.scaleY = allBlocks[0].transform.localScale.y;
+
+        int maxCountX = allBlocks.OrderBy(x => x.transform.localPosition.x).Last().transform.localPosition.ToVector2Int().x + 1;
+        var yLast = allBlocks.OrderBy(x => x.transform.localPosition.y).Last();
+        var yLastPos = yLast.transform.localPosition;
+        var yLastPosVector = yLastPos.ToVector2Int();
+        int maxCountY = allBlocks.OrderBy(x => x.transform.localPosition.y).Last().transform.localPosition.ToVector2Int().y + 1;
         map = new List<CardList>(maxCountX);
         for (int i = 0; i < maxCountX; i++)
         {
@@ -67,11 +73,11 @@ public class BlockManager : MonoBehaviour
         }
         foreach (var item in allBlocks)
         {
-            item.name = item.transform.position.ToVector2Int().ToString();
+            item.name = item.transform.localPosition.ToVector2Int().ToString();
             var newTextMesh = Instantiate(textMesh, item.transform);
             newTextMesh.text = item.name;
-            newTextMesh.transform.localPosition = Vector3.zero;
-            var pos = item.transform.position.ToVector2Int();
+            newTextMesh.transform.localPosition = new Vector3(0, 0, -0.1f);
+            var pos = item.transform.localPosition.ToVector2Int();
             map[pos.x].items[pos.y] = item.blockType;
             map[pos.x].blockInfos[pos.y] = item;
         }
@@ -98,7 +104,7 @@ public class BlockManager : MonoBehaviour
         if (selectedCard.Count == 2)
         {
             Vector2Int find = selectedCard.Where(x => x != blockInfo)
-                .Select(x => x.transform.position.ToVector2Int())
+                .Select(x => x.transform.localPosition.ToVector2Int())
                 .First();
             StartCoroutine(FindPathCo(blockInfo, find));
             selectedCard.Clear();
@@ -108,7 +114,7 @@ public class BlockManager : MonoBehaviour
 
     IEnumerator FindPathCo(BlockInfo blockInfo, Vector2Int find)
     {
-        var pos = blockInfo.transform.position.ToVector2Int();
+        var pos = blockInfo.transform.localPosition.ToVector2Int();
         Pos result = new Pos();
 
         ClearParent(map);
@@ -137,7 +143,7 @@ public class BlockManager : MonoBehaviour
         BlockInfo block = map[result.x].blockInfos[result.y]; // 도착 하는 지점.
         while (block != null)
         {
-            posList.Add(block.transform.position + new Vector3(0, 0, -1f));
+            posList.Add(block.transform.localPosition + new Vector3(0, 0, -1f));
             block = block.parent;
         }
         line.positionCount = posList.Count;
@@ -254,9 +260,11 @@ public class BlockManager : MonoBehaviour
 
 static public class GroundExtention
 {
+    static public float scaleX = 1;
+    static public float scaleY = 1;
     static public Vector2Int ToVector2Int(this Vector3 v3)
     {
-        return new Vector2Int(Mathf.RoundToInt(v3.x)
-            , Mathf.RoundToInt(v3.y));
+        return new Vector2Int(Mathf.RoundToInt(v3.x / scaleX)
+            , Mathf.RoundToInt(v3.y / scaleY));
     }
 }
