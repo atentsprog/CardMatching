@@ -91,16 +91,21 @@ public class BlockManager : MonoBehaviour
 
         if (selectedCard.Count == 2)
         {
-            StartCoroutine(FindPathCo(blockInfo));
+            Vector2Int find = selectedCard.Where(x => x != blockInfo)
+                .Select(x => x.transform.position.ToVector2Int())
+                .First();
+            StartCoroutine(FindPathCo(blockInfo, find));
             selectedCard.Clear();
         }
     }
-    IEnumerator FindPathCo(BlockInfo blockInfo)
+
+
+    IEnumerator FindPathCo(BlockInfo blockInfo, Vector2Int find)
     {
         var pos = blockInfo.transform.position.ToVector2Int();
         Pos result = new Pos();
 
-        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, blockInfo.blockType, map, result));
+        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, find, map, result));
         print(result);
 
         DrawPath(result);
@@ -137,7 +142,7 @@ public class BlockManager : MonoBehaviour
     }
 
     public float simulateSpeed = 0.3f;
-    IEnumerator BFS(Pos start, BlockType find, List<CardList> board, Pos result)
+    IEnumerator BFS(Pos start, Vector2Int find, List<CardList> board, Pos result)
     {
         Dictionary<Direction, Vector2Int> directions = new Dictionary<Direction, Vector2Int>();
         directions[Direction.Left] = new Vector2Int(-1, 0);
@@ -177,11 +182,11 @@ public class BlockManager : MonoBehaviour
 
             board[now.x].blockInfos[now.y].SetActiveState();
 
-            if(simulateSpeed > 0)
+            if (simulateSpeed > 0)
                 yield return new WaitForSeconds(simulateSpeed);
 
             // 짝꿍을 찾았다면! (출발지가 아니고!)
-            if (first == false && board[now.x].items[now.y] == find)
+            if (first == false && now.x == find.x && now.y == find.y)
             {
                 result.x = now.x;
                 result.y = now.y;
@@ -207,7 +212,8 @@ public class BlockManager : MonoBehaviour
                 if (cornetCount >= 3) // 꺾은 횟수가 3 이상이 되면 그 위치는 탐색하지 않는다.⭐
                     continue;
 
-                if (board[nextX].items[nextY] != BlockType.Walkable && board[nextX].items[nextY] != find) // 다른 숫자나 장애물(0) 이라면 갈 수 없음,(1은 갈 수 있음)
+                if (board[nextX].items[nextY] != BlockType.Walkable && false == (nextX == find.x && nextY == find.y))
+                    //if (board[nextX].items[nextY] != BlockType.Walkable && board[nextX].items[nextY] != find) // 다른 숫자나 장애물(0) 이라면 갈 수 없음,(1은 갈 수 있음)
                     continue;
 
                 if (cornerCountMap[nextX][nextY] >= cornetCount)
