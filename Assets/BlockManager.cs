@@ -80,6 +80,12 @@ public class BlockManager : MonoBehaviour
     public HashSet<BlockInfo> selectedCard = new HashSet<BlockInfo>();
     internal void FindPath(BlockInfo blockInfo)
     {
+        if (handleBFS != null)
+        {
+            print("이전 계산 진행중");
+            return;
+        }
+
         if(selectedCard.Count > 0 )
         {
             if (selectedCard.First().blockType != blockInfo.blockType)
@@ -105,10 +111,24 @@ public class BlockManager : MonoBehaviour
         var pos = blockInfo.transform.position.ToVector2Int();
         Pos result = new Pos();
 
-        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, find, map, result));
+        ClearParent(map);
+        handleBFS = StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, find, map, result));
+        yield return handleBFS;
+        handleBFS = null;
         print(result);
 
         DrawPath(result);
+    }
+
+    private void ClearParent(List<CardList> map)
+    {
+        foreach(var line in map)
+        {
+            foreach(var item in line.blockInfos)
+            {
+                item.parent = null;
+            }
+        }
     }
 
     private void DrawPath(Pos result)
@@ -142,6 +162,7 @@ public class BlockManager : MonoBehaviour
     }
 
     public float simulateSpeed = 0.3f;
+    Coroutine handleBFS;
     IEnumerator BFS(Pos start, Vector2Int find, List<CardList> board, Pos result)
     {
         Dictionary<Direction, Vector2Int> directions = new Dictionary<Direction, Vector2Int>();
@@ -227,7 +248,6 @@ public class BlockManager : MonoBehaviour
         }
         result.x = -1;
         result.y = -1;
-
         //return new Pos() { x = -1, y = -1 }; // while문을 빠져나왔다면 짝꿍알파벳을 찾지 못한 것이다. 즉, 제거 불가능! 제거 불가능시에는 {-1, -1}를 리턴하기로 했다.
     }
 }
