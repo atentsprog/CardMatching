@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,5 +28,10 @@ public class BlockInfo : MonoBehaviour
     {
         print($"blockType:{blockType}, {ConvertColor(blockType)}");
         BlockManager.Instance.FindPath(this);
+    }
+
+    internal void SetActiveState()
+    {
+        transform.localScale = Vector3.one * 0.5f;
     }
 }

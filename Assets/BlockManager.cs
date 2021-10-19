@@ -34,6 +34,7 @@ public class BlockManager : MonoBehaviour
     public class IntList
     {
         public List<int> items = new List<int>();
+        public List<BlockInfo> blockInfos = new List<BlockInfo>();
         public override string ToString()
         {
             return items.Select(x => x.ToString()).Aggregate((current, next) => current + ", " + next);
@@ -60,6 +61,7 @@ public class BlockManager : MonoBehaviour
             for (int y = 0; y < maxCountY; y++)
             {
                 map[i].items.Add(0);
+                map[i].blockInfos.Add(null);
             }
         }
         foreach (var item in allBlocks)
@@ -70,17 +72,24 @@ public class BlockManager : MonoBehaviour
             newTextMesh.transform.localPosition = Vector3.zero;
             var pos = item.transform.position.ToVector2Int();
             map[pos.x].items[pos.y] = (int)item.blockType;
+            map[pos.x].blockInfos[pos.y] = item;
         }
     }
     internal void FindPath(BlockInfo blockInfo)
     {
+        StartCoroutine(FindPathCo(blockInfo));
+    }
+    IEnumerator FindPathCo(BlockInfo blockInfo)
+    {
         var pos = blockInfo.transform.position.ToVector2Int();
-        var result = BFS(new Pos() { x = pos.x, y = pos.y }, (int)blockInfo.blockType, map);
+        Pos result = new Pos();
+
+        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, (int)blockInfo.blockType, map, result));
         print(result);
     }
 
 
-    struct Pos
+    class Pos
     {
         public int x; // 행
         public int y; // 열
@@ -96,7 +105,8 @@ public class BlockManager : MonoBehaviour
         Left,Right, Down,Up
     }
 
-    Pos BFS(Pos start, int find, List<IntList> board)
+    public float simulateSpeed = 0.3f;
+    IEnumerator BFS(Pos start, int find, List<IntList> board, Pos result)
     {
         Dictionary<Direction, Vector2Int> directions = new Dictionary<Direction, Vector2Int>();
         directions[Direction.Left] = new Vector2Int(-1, 0);
@@ -134,9 +144,17 @@ public class BlockManager : MonoBehaviour
             // 방문
             Pos now = q.Dequeue();
 
+            board[now.x].blockInfos[now.y].SetActiveState();
+
+            yield return new WaitForSeconds(simulateSpeed);
+
             // 짝꿍을 찾았다면! (출발지가 아니고!)
             if (first == false && board[now.x].items[now.y] == find)
-                return new Pos() { x = now.x, y = now.y }; // 제거 가능하다는 뜻이다. 이 짝꿍 알파벳 위치를 리턴하고 종료.
+            {
+                result.x = now.x;
+                result.y = now.y;
+                yield break;
+            }
 
             first = false; // 출발지 방문시에만 false 상태고 나머지 위치 방문시엔 모두 true 인 상태
 
@@ -165,7 +183,10 @@ public class BlockManager : MonoBehaviour
                 }
             }
         }
-        return new Pos() { x = -1, y = -1 }; // while문을 빠져나왔다면 짝꿍알파벳을 찾지 못한 것이다. 즉, 제거 불가능! 제거 불가능시에는 {-1, -1}를 리턴하기로 했다.
+        result.x = -1;
+        result.y = -1;
+
+        //return new Pos() { x = -1, y = -1 }; // while문을 빠져나왔다면 짝꿍알파벳을 찾지 못한 것이다. 즉, 제거 불가능! 제거 불가능시에는 {-1, -1}를 리턴하기로 했다.
     }
 }
 
