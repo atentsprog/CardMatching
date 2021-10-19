@@ -103,17 +103,21 @@ public class BlockManager : MonoBehaviour
         yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, blockInfo.blockType, map, result));
         print(result);
 
+        DrawPath(result);
+    }
+
+    private void DrawPath(Pos result)
+    {
         List<Vector3> posList = new List<Vector3>();
         BlockInfo block = map[result.x].blockInfos[result.y]; // 도착 하는 지점.
-        while(block != null)
+        while (block != null)
         {
-            posList.Add(block.transform.position + new Vector3( 0, 0, -1f));
+            posList.Add(block.transform.position + new Vector3(0, 0, -1f));
             block = block.parent;
         }
         line.positionCount = posList.Count;
         line.SetPositions(posList.ToArray());
     }
-
 
     class Pos
     {
