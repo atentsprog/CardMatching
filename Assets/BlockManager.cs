@@ -31,16 +31,17 @@ public class BlockManager : MonoBehaviour
     LineRenderer line;
 
     [System.Serializable]
-    public class IntList
+    public class CardList
     {
-        public List<int> items = new List<int>();
+        public List<BlockType> items = new List<BlockType>();
         public List<BlockInfo> blockInfos = new List<BlockInfo>();
         public override string ToString()
         {
             return items.Select(x => x.ToString()).Aggregate((current, next) => current + ", " + next);
         }
     }
-    public List<IntList> map;
+
+    public List<CardList> map;
     void Awake()
     {
         Instance = this;
@@ -54,10 +55,10 @@ public class BlockManager : MonoBehaviour
 
         int maxCountX = allBlocks.OrderBy(x => x.transform.position.x).Last().transform.position.ToVector2Int().x + 1;
         int maxCountY = allBlocks.OrderBy(x => x.transform.position.y).Last().transform.position.ToVector2Int().y + 1;
-        map = new List<IntList>(maxCountX);
+        map = new List<CardList>(maxCountX);
         for (int i = 0; i < maxCountX; i++)
         {
-            map.Add(new IntList());
+            map.Add(new CardList());
             for (int y = 0; y < maxCountY; y++)
             {
                 map[i].items.Add(0);
@@ -71,7 +72,7 @@ public class BlockManager : MonoBehaviour
             newTextMesh.text = item.name;
             newTextMesh.transform.localPosition = Vector3.zero;
             var pos = item.transform.position.ToVector2Int();
-            map[pos.x].items[pos.y] = (int)item.blockType;
+            map[pos.x].items[pos.y] = item.blockType;
             map[pos.x].blockInfos[pos.y] = item;
         }
     }
@@ -84,7 +85,7 @@ public class BlockManager : MonoBehaviour
         var pos = blockInfo.transform.position.ToVector2Int();
         Pos result = new Pos();
 
-        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, (int)blockInfo.blockType, map, result));
+        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, blockInfo.blockType, map, result));
         print(result);
     }
 
@@ -103,10 +104,11 @@ public class BlockManager : MonoBehaviour
     {
         None = -1,
         Left,Right, Down,Up
+            , Last
     }
 
     public float simulateSpeed = 0.3f;
-    IEnumerator BFS(Pos start, int find, List<IntList> board, Pos result)
+    IEnumerator BFS(Pos start, BlockType find, List<CardList> board, Pos result)
     {
         Dictionary<Direction, Vector2Int> directions = new Dictionary<Direction, Vector2Int>();
         directions[Direction.Left] = new Vector2Int(-1, 0);
@@ -119,15 +121,15 @@ public class BlockManager : MonoBehaviour
 
         // start 출발 위치, start_alpha 출발지 알파벳
         Queue<Pos> q = new Queue<Pos>();
-        List<IntList> turn_and_check = new List<IntList>(); // 꺾은 횟수 저장
+        List<List<int>> cornerCountMap = new List<List<int>>(); // 꺾은 횟수 저장
 
         //꺾은 횟수 임의의 아주 큰수로 설정
         for (int i = 0; i < width; i++)
         {
-            turn_and_check.Add(new IntList());
+            cornerCountMap.Add(new List<int>());
             for (int y = 0; y < height; y++)
             {
-                turn_and_check[i].items.Add(int.MaxValue);
+                cornerCountMap[i].Add(int.MaxValue);
             }
         }
 
@@ -135,7 +137,7 @@ public class BlockManager : MonoBehaviour
         // 출발 지점 예약
         start.dir = Direction.None;
         q.Enqueue(start);
-        turn_and_check[start.x].items[start.y] = 0;
+        cornerCountMap[start.x][start.y] = 0;
 
         bool first = true; // 출발지의 알파벳과 동일한 위치에서 종료할건데 바로 출발지의 알파벳과 동일하다고 판정되어 종료되면 안되기 때문에 사용할 플래그
 
@@ -146,7 +148,8 @@ public class BlockManager : MonoBehaviour
 
             board[now.x].blockInfos[now.y].SetActiveState();
 
-            yield return new WaitForSeconds(simulateSpeed);
+            if(simulateSpeed > 0)
+                yield return new WaitForSeconds(simulateSpeed);
 
             // 짝꿍을 찾았다면! (출발지가 아니고!)
             if (first == false && board[now.x].items[now.y] == find)
@@ -158,28 +161,31 @@ public class BlockManager : MonoBehaviour
 
             first = false; // 출발지 방문시에만 false 상태고 나머지 위치 방문시엔 모두 true 인 상태
 
-            for (Direction i = 0; i <= Direction.Up; ++i)
+            for (Direction i = 0; i < Direction.Last; ++i)
             {
                 var dir = directions[i];
                 int nextX = now.x + dir.x;
                 int nextY = now.y + dir.y;
                 Direction nextDir = i;
-                int cornetCount = turn_and_check[now.x].items[now.y]; // 현재 방문 위치까지 꺾은 횟수가 초기값
+                int cornetCount = cornerCountMap[now.x][now.y]; // 현재 방문 위치까지 꺾은 횟수가 초기값
                 if (now.dir != Direction.None && now.dir != nextDir) // 출발지가 아니고(출발지의 방향은 -1로 하였다. 출발지에서 예약되는 위치들은 꺾였다고 판단되지 않기 위해) 방향이 일치하지 않으면 꺾어야 한다. 꺾는 횟수를 1 증가시켜야 한다.
                     cornetCount++;
 
                 // 다음 방문 후보 검사
                 if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) // 1. 범위 내에 있어야 함
                     continue;
+
                 if (cornetCount >= 3) // 꺾은 횟수가 3 이상이 되면 그 위치는 탐색하지 않는다.⭐
                     continue;
-                if (board[nextX].items[nextY] != 1 && board[nextX].items[nextY] != find) // 다른 숫자나 장애물(0) 이라면 갈 수 없음,(1은 갈 수 있음)
+
+                if (board[nextX].items[nextY] != BlockType.Walkable && board[nextX].items[nextY] != find) // 다른 숫자나 장애물(0) 이라면 갈 수 없음,(1은 갈 수 있음)
                     continue;
-                if (turn_and_check[nextX].items[nextY] >= cornetCount)
-                {
-                    // 4. 기존에 찾은 꺾은 횟수 그 이하로 꺾을 수 있다면 더 적은 횟수로 꺾을 수 있는 가능성이 있는 탐색 경로가 되므로 또 삽입
+
+                if (cornerCountMap[nextX][nextY] >= cornetCount)
+                { 
+                // 4. 기존에 찾은 꺾은 횟수 그 이하로 꺾을 수 있다면 더 적은 횟수로 꺾을 수 있는 가능성이 있는 탐색 경로가 되므로 또 삽입
                     q.Enqueue(new Pos() { x = nextX, y = nextY, dir = nextDir });
-                    turn_and_check[nextX].items[nextY] = cornetCount; // 위치별 현재까지 꺾은 횟수 업데이트
+                    cornerCountMap[nextX][nextY] = cornetCount; // 위치별 현재까지 꺾은 횟수 업데이트
                 }
             }
         }
