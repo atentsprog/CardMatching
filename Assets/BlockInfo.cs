@@ -32,6 +32,7 @@ public class BlockInfo : MonoBehaviour
 
     internal void SetActiveState()
     {
+        transform.DOComplete();
         transform.DOPunchScale(Vector3.one * 0.5f, 0.3f);
     }
 }

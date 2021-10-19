@@ -76,9 +76,24 @@ public class BlockManager : MonoBehaviour
             map[pos.x].blockInfos[pos.y] = item;
         }
     }
+
+    public HashSet<BlockInfo> selectedCard = new HashSet<BlockInfo>();
     internal void FindPath(BlockInfo blockInfo)
     {
-        StartCoroutine(FindPathCo(blockInfo));
+        if(selectedCard.Count > 0 )
+        {
+            if (selectedCard.First().blockType != blockInfo.blockType)
+                selectedCard.Clear();
+        }
+
+
+        selectedCard.Add(blockInfo);
+
+        if (selectedCard.Count == 2)
+        {
+            StartCoroutine(FindPathCo(blockInfo));
+            selectedCard.Clear();
+        }
     }
     IEnumerator FindPathCo(BlockInfo blockInfo)
     {
