@@ -102,6 +102,16 @@ public class BlockManager : MonoBehaviour
 
         yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, blockInfo.blockType, map, result));
         print(result);
+
+        List<Vector3> posList = new List<Vector3>();
+        BlockInfo block = map[result.x].blockInfos[result.y]; // 도착 하는 지점.
+        while(block != null)
+        {
+            posList.Add(block.transform.position + new Vector3( 0, 0, -1f));
+            block = block.parent;
+        }
+        line.positionCount = posList.Count;
+        line.SetPositions(posList.ToArray());
     }
 
 
@@ -201,6 +211,7 @@ public class BlockManager : MonoBehaviour
                 // 4. 기존에 찾은 꺾은 횟수 그 이하로 꺾을 수 있다면 더 적은 횟수로 꺾을 수 있는 가능성이 있는 탐색 경로가 되므로 또 삽입
                     q.Enqueue(new Pos() { x = nextX, y = nextY, dir = nextDir });
                     cornerCountMap[nextX][nextY] = cornetCount; // 위치별 현재까지 꺾은 횟수 업데이트
+                    board[nextX].blockInfos[nextY].parent = board[now.x].blockInfos[now.y];
                 }
             }
         }

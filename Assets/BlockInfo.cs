@@ -6,6 +6,8 @@ using DG.Tweening;
 public class BlockInfo : MonoBehaviour
 {
     public BlockType blockType;
+    public BlockInfo parent;
+
     void Start()
     {
         GetComponent<Renderer>().material.SetColor("_Color",
