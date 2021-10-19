@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using DG.Tweening;
 public class BlockInfo : MonoBehaviour
 {
     public BlockType blockType;
@@ -32,6 +32,6 @@ public class BlockInfo : MonoBehaviour
 
     internal void SetActiveState()
     {
-        transform.localScale = Vector3.one * 0.5f;
+        transform.DOPunchScale(Vector3.one * 0.5f, 0.3f);
     }
 }
