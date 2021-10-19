@@ -67,10 +67,24 @@ public class LevelConstructor : MonoBehaviour
         }
     }
 
-    //[ContextMenu("블럭 타입 설정")]
-    //void SetBlockType()
-    //{
-    //    //텍스쳐를 블럭타입 정보로 바꿔서 설정
-    //    var trexture = GetComponentInChildren<Renderer>().material.mainTexture;
-    //}
+    [ContextMenu("블럭 타입 설정")]
+    void SetBlockType()
+    {
+        //텍스쳐를 블럭타입 정보로 바꿔서 설정
+        var childRenderers = GetComponentsInChildren<Renderer>();
+        foreach (var renderer in childRenderers)
+        {
+            if (renderer.transform == transform)
+                continue;
+
+            var texture = renderer.material.mainTexture;
+            var cardTexture = textures.Find(x => x.texture == texture);
+            BlockType blockType = BlockType.Walkable;
+            if (cardTexture != null)
+            {
+                blockType = cardTexture.blockType;
+            }
+            renderer.transform.parent.GetComponent<BlockInfo>().blockType = blockType;
+        }
+    }
 }

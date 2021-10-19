@@ -139,11 +139,17 @@ public class BlockManager : MonoBehaviour
 
     private void DrawPath(Pos result)
     {
+        if (result.x == -1) // 그릴께 없음
+        {
+            line.positionCount = 0;
+            return;
+        }
+
         List<Vector3> posList = new List<Vector3>();
         BlockInfo block = map[result.x].blockInfos[result.y]; // 도착 하는 지점.
         while (block != null)
         {
-            posList.Add(block.transform.localPosition + new Vector3(0, 0, -1f));
+            posList.Add(block.transform.position + new Vector3(0, 0, -1f));
             block = block.parent;
         }
         line.positionCount = posList.Count;
