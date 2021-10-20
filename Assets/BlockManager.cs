@@ -86,7 +86,7 @@ public class BlockManager : MonoBehaviour
     public HashSet<BlockInfo> selectedCard = new HashSet<BlockInfo>();
     internal void FindPath(BlockInfo blockInfo)
     {
-        if (handleBFS != null)
+        if (ingBFS)
         {
             print("이전 계산 진행중");
             return;
@@ -118,9 +118,9 @@ public class BlockManager : MonoBehaviour
         Pos result = new Pos();
 
         ClearParent(map);
-        handleBFS = StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, find, map, result));
-        yield return handleBFS;
-        handleBFS = null;
+        ingBFS = true;
+        yield return StartCoroutine(BFS(new Pos() { x = pos.x, y = pos.y }, find, map, result));
+        ingBFS = false;
         print(result);
 
         DrawPath(result);
@@ -174,7 +174,8 @@ public class BlockManager : MonoBehaviour
     }
 
     public float simulateSpeed = 0.3f;
-    Coroutine handleBFS;
+
+    bool ingBFS; //BFS 함수가 실행중인 동안 true.
     IEnumerator BFS(Pos start, Vector2Int find, List<CardList> board, Pos result)
     {
         Dictionary<Direction, Vector2Int> directions = new Dictionary<Direction, Vector2Int>();
