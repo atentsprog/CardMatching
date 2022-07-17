@@ -20,6 +20,7 @@ public class LevelConstructor : MonoBehaviour
         }
     }
 
+    [Button("선택된 오브젝트에 갈 수 있는길 적용")] public void SetSelectedBlock8() { SetSelectedBlock(8); }
     [Button("선택된 오브젝트에 0텍스쳐 적용")] public void SetSelectedBlock0() { SetSelectedBlock(0); }
     [Button("선택된 오브젝트에 1텍스쳐 적용")] public void SetSelectedBlock1() { SetSelectedBlock(1); }
     [Button("선택된 오브젝트에 2텍스쳐 적용")] public void SetSelectedBlock2() { SetSelectedBlock(2); }
@@ -35,7 +36,10 @@ public class LevelConstructor : MonoBehaviour
         CardTexture cardTexture = textures[textureIndex];
         foreach (var item in UnityEditor.Selection.objects)
         {
-            BlockInfo blockInfo = ((GameObject)item).GetComponent<BlockInfo>();
+            var go = item as GameObject;
+            BlockInfo blockInfo = go.GetComponent<BlockInfo>();
+            if (blockInfo == null)
+                blockInfo = go.GetComponentInParent<BlockInfo>();
             blockInfo.blockType = cardTexture.blockType;
             blockInfo.SetTexture(cardTexture.texture);
         }
