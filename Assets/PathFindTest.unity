@@ -589,7 +589,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &107982334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3253,9 +3253,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25360ca665c853b4e9fa35ac88e32175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  map: []
+  mapList: []
   textMesh: {fileID: 3238426511731058402, guid: 3d2d97b433821614ca9aa70a5daed7b6, type: 3}
-  simulateSpeed: 1
+  simulateSpeed: 0.2
 --- !u!4 &746236980
 Transform:
   m_ObjectHideFlags: 0
