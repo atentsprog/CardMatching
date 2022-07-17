@@ -7,6 +7,8 @@ public class BlockInfo : MonoBehaviour
 {
     public BlockType blockType;
     public BlockInfo parent;
+    [SerializeField] Color debugColor = Color.red;
+    [SerializeField] float debugTweenTime = 0.5f;
 
     void Start()
     {
@@ -36,6 +38,10 @@ public class BlockInfo : MonoBehaviour
     {
         transform.DOComplete();
         transform.DOPunchScale(Vector3.one * 0.5f, 0.3f);
+
+        var mat = GetComponentInChildren<Renderer>().material;
+        mat.color = debugColor;
+        mat.DOColor(Color.white, debugTweenTime);
     }
 
     internal void SetTexture(Texture2D texture)
